@@ -1,0 +1,14 @@
+---------------------------------------------------------------------------
+Statistics utilized in the paper
+---------------------------------------------------------------------------
+
+
+VARYING LAMBDA
+--------------------------------------------------
+Total extra infections incurred by misinformed group (vs. ordinary):  12.6%
+Total extra infections incurred by network (lambda 1 vs lambda 3.0):  29.2%
+Peak day for misinformed group: 22 (lambda = 3.0)
+Peak day for ordinary group: 24 (lambda = 3.0)
+Network peak (misinformed + ordinary), lambda = 3.0: 22 days
+Network peak (misinformed + ordinary), lambda = 1: 60 days
+Network peak (misinformed + ordinary), difference: 38 days

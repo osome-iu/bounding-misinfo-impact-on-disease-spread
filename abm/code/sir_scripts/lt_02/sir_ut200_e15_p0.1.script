@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH -J sir_big_net
+#SBATCH -p general
+#SBATCH -o sir_ut200_e15_p0.1_%j.txt
+#SBATCH -e sir_ut200_e15_p0.1_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=mdeverna@iu.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=96:00:00
+#SBATCH --mem=500G
+#SBATCH -A r00481
+
+#Load any modules that your program needs
+module --ignore_cache load "python/3.9.8"
+
+#Run your program
+script=/N/slate/mdeverna/bounding-misinfo-impact-on-disease-spread/abm/code/014_sir_modeling.py
+cnets_dir=/N/slate/mdeverna/bounding-misinfo-impact-on-disease-spread/abm/data/contact_networks
+cnet_file=2023-12-06_12-52-19__contact_network__minusers_200__numedges_15__propsampled_0.1.gml
+cnet_file=$cnets_dir/$cnet_file
+srun python3 $script -lt 2 -c $cnet_file

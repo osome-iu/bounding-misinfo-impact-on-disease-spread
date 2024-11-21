@@ -6,7 +6,7 @@ Code for the agent-based modeling portion of the project is saved here.
 
 #### Scripts
 
-> Note: bash/SLURM files which share prefix numbers with Python scripts are utilized to run the associated Python script with IU's high performance computing system. This is _necessary_ given the size of the networks. E.g., multiple simulations on networks > 20GBs, requires < 100GBs of RAM.
+> Note: bash/SLURM files which share prefix numbers with Python scripts are utilized to run the associated Python script with IU's high performance computing system. This is _necessary_ given the size of the networks. E.g., multiple simulations on networks that are larger than 20GBs themselves, requires > 100GBs of RAM.
 
 - `001_extract_urls_from_tweets.py`: Extract URLs from tweets. This script creates a different output file for every input file it reads.
 - `002_make_retweets_network.py`: Create retweet networks from CoVaxxy streaming data.
@@ -44,9 +44,10 @@ Code for the agent-based modeling portion of the project is saved here.
 The final, aggregate simulation data can be found in the `/data/simulations_clean/` directory and can be utilized to generate the figures in our paper with the `018_generate_figures.sh` script.
 
 A good portion of this code (scripts 001-007) require raw streaming data, and others utilized NewsGuard data, which we cannot share for contractual reasons.
-Furthermore, all of the data files utilized in this repository total nearly 250GBs.
+Furthermore, all of the data files utilized in this repository total ~344 GBs.
 Files we are allowed to share and whose size does not exceed GitHub's single file limits, are available.
-For other data, please reach out to Matt via the email address listed on [his website](https://www.matthewdeverna.com).
+For other data, please reach out to the [Observatory on Social Media](https://osome.iu.edu/).
+Currently, a contact page can be found here: https://osome.iu.edu/about/contact
 
 See the `./abm/requirements.txt` file for environment details.
 

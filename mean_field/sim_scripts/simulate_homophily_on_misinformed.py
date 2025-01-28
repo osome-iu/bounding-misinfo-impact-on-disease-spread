@@ -28,6 +28,7 @@ OUT_DIR = "../sim_results"
 SUB_DIR = "effects_of_homophily_on_misinformed"
 CURR_DIR = "sim_scripts"
 # Ensure we are in the data_analysis directory for paths to work
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 if os.path.basename(os.getcwd()) != CURR_DIR:
     raise Exception(f"Must run this script from the `{CURR_DIR}` directory!")
 
@@ -51,7 +52,7 @@ alphas = np.arange(0.5, 1.01, 0.05)
 
 # Result storage
 totals = []  # Total infections
-infection_flows = dict()  # Daily infections
+infection_flows = []  # Daily infections
 
 betas = np.arange(0.1, 0.41, 0.01)
 
@@ -74,7 +75,11 @@ for beta in betas:
         total_ord_inf = max(R_o)
         total_mis_inf = max(R_m)
 
-        infection_flows[(alpha, beta)] = I_o + I_m
+        I = I_o + I_m
+        infection_flows.append(
+            {"alpha": alpha, "beta": beta, "day": day, "prop_infected": i}
+            for day, i in enumerate(I, start=1)
+        )
 
         totals.append(
             {
@@ -90,12 +95,7 @@ for beta in betas:
 total_infected_df = pd.DataFrame(totals)
 
 ### Daily proportion of the network that gets infected ###
-daily_infected_df = pd.DataFrame(infection_flows).reset_index()
-daily_infected_df = daily_infected_df.rename(columns={"index": "day"})
-daily_infected_df.day = daily_infected_df.day + 1
-daily_infected_df = daily_infected_df.melt(id_vars="day")
-daily_infected_df.rename(columns={"variable": "alpha"}, inplace=True)
-daily_infected_df.rename(columns={"value": "prop_infected"}, inplace=True)
+daily_infected_df = pd.DataFrame(infection_flows)
 
 ### Save results ###
 out_dir = os.path.join(OUT_DIR, SUB_DIR)

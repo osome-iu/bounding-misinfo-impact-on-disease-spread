@@ -37,7 +37,7 @@ echo ""
 
 echo "Running simulate_effects_of_beta.py ..."; python3 simulate_effects_of_beta.py
 echo "Running simulate_effects_of_rec_period.py ..."; python3 simulate_effects_of_rec_period.py
-echo "Running simulate_effects_of_lambda.py ..."; python3 simulate_effects_of_lambda.py
+echo "Running simulate_effects_of_lambda_all_settings.py ..."; python3 simulate_effects_of_lambda_all_settings.py
 echo "Running simulate_effects_of_homophily.py ..."; python3 simulate_effects_of_homophily.py
 echo "Running simulate_homophily_on_misinformed.py ..."; python3 simulate_homophily_on_misinformed.py
 
@@ -55,6 +55,7 @@ echo ""
 echo "Running generate_beta_figure.py ..."; python3 generate_beta_figure.py
 echo "Running generate_tau_figure.py ..."; python3 generate_tau_figure.py
 echo "Running generate_lambda_figure.py ..."; python3 generate_lambda_figure.py
+echo "Running generate_misinformed_prop_size_figure.py ..."; python3 generate_misinformed_prop_size_figure.py
 echo "Running generate_homophily_figure.py ..."; python3 generate_homophily_figure.py
 echo "Running generate_homophily_on_misinformed_figure_3d.py ..."; python3 generate_homophily_on_misinformed_figure_3d.py
 

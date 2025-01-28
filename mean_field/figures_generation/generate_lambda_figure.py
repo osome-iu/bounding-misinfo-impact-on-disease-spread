@@ -11,12 +11,12 @@ Outputs:
 Author:
     Matthew R. DeVerna
 """
+
 import os
 import sys
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import numpy as np
 import pandas as pd
 
 
@@ -33,191 +33,256 @@ sys.path.insert(0, source_dir)
 from simulations import get_peak_day
 
 ### Load simulation results ###
-totals_df = pd.read_csv(os.path.join(RESULTS_DIR, "total_infected.csv"))
-by_day_df = pd.read_csv(os.path.join(RESULTS_DIR, "daily_infected.csv"))
+totals_df = pd.read_csv(os.path.join(RESULTS_DIR, "total_infected_all_settings.csv"))
+by_day_df = pd.read_csv(os.path.join(RESULTS_DIR, "daily_infected_all_settings.csv"))
 
-less_combined = by_day_df[
-    (by_day_df.group == "combined") & (by_day_df["lambda"].isin([1, 2, 3, 4]))
-].copy()
-less_mis = by_day_df[
-    (by_day_df.group == "misinformed") & (by_day_df["lambda"].isin([1, 2, 3, 4]))
-].copy()
-less_ord = by_day_df[
-    (by_day_df.group == "ordinary") & (by_day_df["lambda"].isin([1, 2, 3, 4]))
-].copy()
+# Select specific lambda values and parameter settings
+temp_df = by_day_df[
+    (by_day_df["lambda"].isin([1, 2, 3]))  # , 3.3, 4]))
+    & (by_day_df["beta"] == 0.3)
+    & (by_day_df["frac_ord"] == 0.5)
+]
 
-y_buffer = 0.02
-peaks_dict = {}
-for val in [1, 2, 3]:
-    temp_df = less_combined[less_combined["lambda"] == val]
-    peaks_dict[val] = {
-        "x": get_peak_day(temp_df["value"]),
-        "y": temp_df["value"].max() + y_buffer,
-    }
+# Create the figure and grid layout
+fig = plt.figure(figsize=(10, 6))
+grid = gridspec.GridSpec(3, 2, width_ratios=[1, 2])
+
+# Create subplots for the first column
+ax1 = plt.subplot(grid[0, 1])
+ax2 = plt.subplot(grid[1, 1])
+ax3 = plt.subplot(grid[2, 1])
+
+color_list = [
+    "#006ba4",
+    "#ff800e",
+    "#ababab",
+    "#595959",
+    "#5f9ed1",
+    "#c85200",
+    "#898989",
+    "#a2c8ec",
+    "#ffbc79",
+    "#cfcfcf",
+]
+color_map = {val: color_list[idx] for idx, val in enumerate([1, 2, 3, 4])}
+line_map = {1: "dotted", 2: "dashed", 3: "solid", 4: "dashdot"}
 
 # Set the font size for all text
 plt.rcParams.update({"font.size": 12})
 
-# Create color map based on Tableu10 found here: https://vega.github.io/vega/docs/schemes/
-color_map = {1: "#4c78a8", 2: "#f58518", 3: "#e45756", 4: "#72b7b2"}
-line_map = {1: "dotted", 2: "dashed", 3: "solid", 4: "#dashdot"}
+# Used to store/plot the peaks
+# y_buffer = 0.02
+peaks_dict = {}
 
-# Create the figure and grid layout
-fig = plt.figure(figsize=(10, 6))
-grid = gridspec.GridSpec(3, 2, width_ratios=[2, 1])
+# Plot the curves
+for lambda_val in temp_df["lambda"].unique():
+    selected_df = temp_df[temp_df["lambda"] == lambda_val]
 
-# Create subplots for the first column
-ax1 = plt.subplot(grid[0, 0])
-ax2 = plt.subplot(grid[1, 0])
-ax3 = plt.subplot(grid[2, 0])
+    peaks_dict[lambda_val] = {
+        "x": get_peak_day(selected_df["infections_total"]),
+        "y": selected_df["infections_total"].max(),
+    }
 
-## Combined figure
-for mult in less_combined["lambda"].unique():
-    temp_df = less_combined[less_combined["lambda"] == mult]
     ax1.plot(
-        temp_df["day"],
-        temp_df["value"],
-        color=color_map[mult],
-        label=int(mult),
-        linestyle=line_map[mult],
+        selected_df["day"],
+        selected_df["infections_total"],
+        c=color_map[lambda_val],
+        linestyle=line_map[lambda_val],
+        label=f"{lambda_val}",
     )
-    if mult in [1, 3]:
+    ax2.plot(
+        selected_df["day"],
+        selected_df["infections_mis"],
+        c=color_map[lambda_val],
+        linestyle=line_map[lambda_val],
+        label=f"{lambda_val}",
+    )
+    ax3.plot(
+        selected_df["day"],
+        selected_df["infections_ord"],
+        c=color_map[lambda_val],
+        linestyle=line_map[lambda_val],
+        label=f"{lambda_val}",
+    )
+
+# Add peaks to the totals plot
+for lambda_val, peak in peaks_dict.items():
+    if lambda_val in [1, 3]:
         ax1.vlines(
-            x=peaks_dict[mult]["x"],
+            x=peak["x"],
             ymin=0,
-            ymax=peaks_dict[mult]["y"],
+            ymax=peak["y"],
             color="black",
             linewidth=1,
         )
-        ax1.annotate(
-            text=f"{peaks_dict[mult]['y']:.2f} (day {peaks_dict[mult]['x']})",
-            xy=(peaks_dict[mult]["x"], peaks_dict[mult]["y"] + 0.01),
+        ax1.text(
+            peak["x"],
+            peak["y"],
+            f"{peak['y']:.2f} (day {peak['x']})",
+            ha="left",
+            va="bottom",
             color="black",
-            ha="center",
         )
 
-## Misinformed figure
-for mult in less_mis["lambda"].unique():
-    temp_df = less_mis[less_mis["lambda"] == mult]
-    ax2.plot(
-        temp_df["day"],
-        temp_df["value"],
-        color=color_map[mult],
-        label=int(mult),
-        linestyle=line_map[mult],
-    )
-
-## Ordinary figure
-for mult in less_ord["lambda"].unique():
-    temp_df = less_ord[less_ord["lambda"] == mult]
-    ax3.plot(
-        temp_df["day"],
-        temp_df["value"],
-        color=color_map[mult],
-        label=int(mult),
-        linestyle=line_map[mult],
-    )
+# Remove all spines
+for a in [ax1, ax2, ax3]:
+    a.spines["top"].set_visible(False)
+    a.spines["right"].set_visible(False)
+    a.grid()
+    a.set_ylim(0, 0.4)
 
 
-# Set the y-axis limits for the first column
-ax1.set_ylim(0, 0.42)
-ax2.set_ylim(0, 0.42)
-ax3.set_ylim(0, 0.42)
-
-# Share y-axis limits for the first column
-ax2.sharey(ax1)
-ax3.sharey(ax1)
-
-# Add gridlines to all subplots
-ax1.grid(True)
-ax2.grid(True)
-ax3.grid(True)
-
-# Remove spines
-ax1.spines["top"].set_visible(False)
-ax1.spines["right"].set_visible(False)
-
-ax2.spines["top"].set_visible(False)
-ax2.spines["right"].set_visible(False)
-
-ax3.spines["top"].set_visible(False)
-ax3.spines["right"].set_visible(False)
-
-# Remove x-axis ticks
-ax1.xaxis.set_ticklabels([])
-ax2.xaxis.set_ticklabels([])
-
-### Create right panel
-
-# Create subplot for the second column spanning all three rows
-ax4 = plt.subplot(grid[:, 1])
-
-# Plot extra infections
-ax4.plot(
-    totals_df["lambda"],
-    totals_df["total_extra"],
-    color="black",
-)
-
-# Move the y-axis of the right spanning plot to the right side
-ax4.yaxis.tick_right()
-ax4.yaxis.set_label_position("right")
-
-# # Set the y-axis limits for the second column
-# ax4.set_ylim(0, 1)
-
-# Add gridlines to the subplot in the second column
-ax4.grid(True)
-
-# Remove spines
-ax4.spines["left"].set_visible(False)
-ax4.spines["top"].set_visible(False)
-
-# Set labels for each subplot
-ax1.set_ylabel("all")
-ax2.set_ylabel("proportion infected\n\nmisinformed")
-ax3.set_ylabel("ordinary")
-ax3.set_xlabel("day")
-ax4.set_ylabel(
-    "proportion of extra infections due to misinformed", rotation=-90, va="bottom"
-)
-ax4.set_xlabel("$\lambda$")
-
-
-# Add a legend above the top left panel
+# Reorder the legend handles by row instead of column
+h, l = ax1.get_legend_handles_labels()
+reorder = lambda l, nc: sum((l[i::nc] for i in range(nc)), [])
 ax1.legend(
+    # reorder(h, 3),
+    # reorder(l, 3),
+    ncol=4,
     loc="lower center",
     bbox_to_anchor=(0.5, 1),
-    ncol=4,
     frameon=False,
-    title="$\lambda$",
+    title=r"$\lambda$",
 )
 
-plt.tight_layout()
+# Create subplot for the second column spanning all three rows
+# ax5 = plt.subplot(grid[:, 1])
+ax5 = plt.subplot(grid[2, 0])
 
-plt.subplots_adjust(wspace=0.15)
+# Plot extra infections
+source = totals_df[
+    (totals_df["beta"] == 0.3)
+    & (totals_df["frac_ord"] == 0.5)
+    & (totals_df["lambda"] <= 10)
+]
+ax5.plot(
+    source["lambda"],
+    source["extra_inf"],
+    color="black",
+    alpha=1,
+    linewidth=1,
+)
+
+# plot points for lambda = [ 1, 2, 3] that match the colors of the other plots
+# for lambda_val in [1, 2, 3]:
+#     ax5.scatter(
+#         lambda_val,
+#         source[source["lambda"] == lambda_val]["extra_inf"],
+#         color=color_map[lambda_val],
+#         marker="s",
+#         alpha=1,
+#         zorder=3,
+#     )
+
+ax5.set_xlabel(r"$\lambda$")
+ax5.set_ylim(0, 0.3)
+ax5.spines["top"].set_visible(False)
+ax5.spines["right"].set_visible(False)
+ax5.grid()
+# ax5.set_xscale("log")
+
+# Move the y-axis of the right spanning plot to the right side
+# ax5.yaxis.tick_right()
+# ax5.yaxis.set_label_position("right")
+
+ax1.set_ylabel("all", fontsize=12, rotation=270, labelpad=20)
+ax1.yaxis.tick_right()
+ax1.yaxis.set_label_position("right")
+ax1.set_xlabel("day", fontsize=12)
+ax2.set_ylabel(
+    "proportion infected\n\nmisinformed", fontsize=12, rotation=270, labelpad=40
+)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+ax2.set_xlabel("day", fontsize=12)
+ax3.set_ylabel("ordinary", fontsize=12, rotation=270, labelpad=20)
+ax3.yaxis.tick_right()
+ax3.yaxis.set_label_position("right")
+ax3.set_xlabel("day", fontsize=12)
+ax5.set_ylabel("proportion of\nextra infections")
+ax5.set_xlim(0, 10)
+
+# Set x-tick fontsize to 12
+for a in [ax1, ax2, ax3]:
+    a.tick_params(axis="x", labelsize=12)
+    a.tick_params(axis="y", labelsize=12)
+
+# Remove x-axis ticks
+# ax1.xaxis.set_ticklabels([])
+# ax2.xaxis.set_ticklabels([])
+
+# Use scalar values for x axis of ax5
+ax5.xaxis.set_major_formatter(plt.ScalarFormatter())
+
+
+# Ax 5
+ax4 = plt.subplot(grid[0:2, 0])
+
+
+frac_mis = 0.5
+color_map = ["#4c78a8", "#f58518", "#e45756", "#72b7b2", "purple"]
+for idx, beta in enumerate(totals_df.beta.unique()):
+    temp_df = totals_df[(totals_df.beta == beta) & (totals_df.frac_mis == frac_mis)]
+    ax4.plot(temp_df["lambda"], temp_df["total_inf"], label=beta, c=color_map[idx])
+    # ax4.set_title(f"prop. misinformed = {frac_mis}", fontsize=10)
+
+
+ax4.set_xlabel(r"$\lambda$")
+# ax4.yaxis.tick_right()
+# ax4.yaxis.set_label_position("right")
+ax4.set_ylabel("proportion infected")
+ax4.legend(
+    title=r"$\beta_O$",
+    ncols=3,
+    frameon=False,
+    loc="lower center",
+    bbox_to_anchor=(0.5, 1),
+)
+ax4.set_xscale("log")
+
+# format the xaxis tick values as scalar numbers
+ax4.xaxis.set_major_formatter(plt.ScalarFormatter())
+
+# remove spines on left and top
+ax4.spines["top"].set_visible(False)
+ax4.spines["right"].set_visible(False)
+ax4.grid()
+
+plt.subplots_adjust(wspace=0.15, hspace=0.5)
 
 # Add subplot annotations
 ax1.annotate(
-    "A",
-    xy=(-0.15, 1),
+    "(b)",
+    xy=(-0.05, 1),
     xycoords=ax1.transAxes,
     fontsize=14,
-    fontweight="bold",
     ha="center",
     va="center",
 )
-ax4.annotate(
-    "B",
-    xy=(-0.1, 1),
-    xycoords=ax4.transAxes,
+ax5.annotate(
+    "(c)",
+    xy=(-0.3, 1.2),
+    xycoords=ax5.transAxes,
     fontsize=14,
-    fontweight="bold",
     ha="center",
     va="center",
 )
 
-# Save the plot
+ax4.annotate(
+    "(a)",
+    xy=(-0.3, 1.0),
+    xycoords=ax4.transAxes,
+    fontsize=14,
+    ha="center",
+    va="center",
+)
+
+# # Save the plot
 os.makedirs(OUT_DIR, exist_ok=True)
-plt.savefig(os.path.join(OUT_DIR, "mf_lambda_effect.pdf"), dpi=800)
-plt.savefig(os.path.join(OUT_DIR, "mf_lambda_effect.png"), dpi=800, transparent=True)
+plt.savefig(os.path.join(OUT_DIR, "mf_lambda_effect.pdf"), bbox_inches="tight", dpi=800)
+plt.savefig(
+    os.path.join(OUT_DIR, "mf_lambda_effect.png"),
+    bbox_inches="tight",
+    dpi=800,
+    transparent=True,
+)

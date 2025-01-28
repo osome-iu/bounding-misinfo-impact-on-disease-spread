@@ -12,6 +12,7 @@ Outputs:
 Author:
     Matthew R. DeVerna
 """
+
 import os
 import sys
 
@@ -40,37 +41,56 @@ print("-" * 75)
 print("\n")
 
 ### Load simulation results ###
-totals_df = pd.read_csv(os.path.join(RESULTS_DIR, "total_infected.csv"))
-by_day_df = pd.read_csv(os.path.join(RESULTS_DIR, "daily_infected.csv"))
+totals_df = pd.read_csv(os.path.join(RESULTS_DIR, "total_infected_all_settings.csv"))
+by_day_df = pd.read_csv(os.path.join(RESULTS_DIR, "daily_infected_all_settings.csv"))
+
+## Select the data we want ##
+# ------------------------- #
+
+# Total infections
+lambda_3 = totals_df[
+    (totals_df["beta"] == 0.3)
+    & (totals_df["frac_mis"] == 0.5)
+    & (totals_df["lambda"] == 3)
+]
+
+# By day for each lambda value
+by_day_lambda_3 = by_day_df[
+    (by_day_df["lambda"] == 3)
+    & (by_day_df["beta"] == 0.3)
+    & (by_day_df["frac_ord"] == 0.5)
+]
+
+by_day_lambda_1 = by_day_df[
+    (by_day_df["lambda"] == 1)
+    & (by_day_df["beta"] == 0.3)
+    & (by_day_df["frac_ord"] == 0.5)
+]
+
+# Select/calculate the values we want to print
+mis_vs_ord_diff = lambda_3["diff"].values[0]  # Misinformed - Ordinary
+mis_vs_ord_extra = lambda_3["extra_inf"].values[0]  # Total lambda 3 - total lambda = 1
+
+peak_day_mis = get_peak_day(by_day_lambda_3["infections_mis"])
+peak_day_ord = get_peak_day(by_day_lambda_3["infections_ord"])
+
+peak_day_lambda_1 = get_peak_day(by_day_lambda_1["infections_total"])
+peak_day_lambda_3 = get_peak_day(by_day_lambda_3["infections_total"])
+diff = peak_day_lambda_1 - peak_day_lambda_3
+
 
 print("VARYING LAMBDA")
 print("-" * 50)
-total_max_only = totals_df.loc[np.isclose(totals_df["lambda"], MAX_LAMBDA)]
 print(
-    f"Total extra infections incurred by misinformed group (vs. ordinary): {total_max_only['diff'].max() : .1%}"
+    f"Total extra infections incurred by misinformed group (vs. ordinary):{mis_vs_ord_diff:.1%}"
 )
 print(
-    f"Total extra infections incurred by network (lambda 1 vs lambda {MAX_LAMBDA}): {total_max_only['total_extra'].max() : .1%}"
+    f"Total extra infections incurred by network (lambda 1 vs lambda 3.0): {mis_vs_ord_extra:.1%}"
 )
-for group in ["misinformed", "ordinary"]:
-    temp_slice = by_day_df[
-        (np.isclose(by_day_df["lambda"], MAX_LAMBDA)) & (by_day_df["group"] == group)
-    ]
 
-    peak_day = get_peak_day(temp_slice["value"])
-    print(f"Peak day for {group} group: {peak_day} (lambda = {MAX_LAMBDA})")
+print(f"Peak day for misinformed group: {peak_day_mis} (lambda = 3.0)")
+print(f"Peak day for ordinary group: {peak_day_ord} (lambda = 3.0)")
 
-# 'combined' here means "the entire network"
-combined_by_day = by_day_df[by_day_df["group"] == "combined"].reset_index(drop=True)
-combined_max_lambda = combined_by_day[combined_by_day["lambda"] == MAX_LAMBDA]
-comb_lambda1 = combined_by_day[combined_by_day["lambda"] == 1]
-
-comb_max_lambda_peak_day = get_peak_day(combined_max_lambda["value"])
-comb_lambda1_peak_day = get_peak_day(comb_lambda1["value"])
-
-net_peak_str = "Network peak (misinformed + ordinary)"
-print(f"{net_peak_str}, lambda = {MAX_LAMBDA}: {comb_max_lambda_peak_day} days")
-print(f"{net_peak_str}, lambda = 1: {comb_lambda1_peak_day} days")
-print(
-    f"{net_peak_str}, difference: {comb_lambda1_peak_day - comb_max_lambda_peak_day} days"
-)
+print(f"Network peak (misinformed + ordinary), lambda 1: {peak_day_lambda_1} days")
+print(f"Network peak (misinformed + ordinary), lambda 3: {peak_day_lambda_3} days")
+print(f"Network peak (misinformed + ordinary), difference:: {diff} days")

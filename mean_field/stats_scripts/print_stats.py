@@ -82,7 +82,7 @@ diff = peak_day_lambda_1 - peak_day_lambda_3
 print("VARYING LAMBDA")
 print("-" * 50)
 print(
-    f"Total extra infections incurred by misinformed group (vs. ordinary):{mis_vs_ord_diff:.1%}"
+    f"Total extra infections incurred by misinformed group (vs. ordinary): {mis_vs_ord_diff:.1%}"
 )
 print(
     f"Total extra infections incurred by network (lambda 1 vs lambda 3.0): {mis_vs_ord_extra:.1%}"

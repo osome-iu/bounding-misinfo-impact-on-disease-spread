@@ -3,6 +3,7 @@ Source code for simulations
 
 Author: Matthew DeVerna
 """
+
 import numpy as np
 
 
@@ -212,7 +213,7 @@ def run_simulation(
     # Setting beta values
     B_o = beta_ord
     B_m = B_o * beta_mult
-    # B_m = 1 if B_m >= 1 else B_m
+    B_m = 1 if B_m >= 1 else B_m
 
     # Get r0 values
     ord_r0 = B_o / k

@@ -102,7 +102,6 @@ for col in sorted(column_name_map.keys(), reverse=True):
 
         # Convert the list of maximum points to a NumPy array for plotting
         max_points = np.array(max_points)
-        print(max_points)
 
         # Plot the maximum points as a scatter plot on the "all" subplot
         temp_ax.scatter(
@@ -121,31 +120,28 @@ plt.subplots_adjust(wspace=0.15)
 
 # Add subplot annotations
 ax1.annotate(
-    "A",
+    "(a)",
     xy=(0.0, 0.95),
     xycoords=ax1.transAxes,
     fontsize=14,
-    fontweight="bold",
     ha="center",
     va="center",
 )
 
 ax2.annotate(
-    "B",
+    "(b)",
     xy=(0.0, 0.95),
     xycoords=ax2.transAxes,
     fontsize=14,
-    fontweight="bold",
     ha="center",
     va="center",
 )
 
 ax3.annotate(
-    "C",
+    "(c)",
     xy=(0.0, 0.95),
     xycoords=ax3.transAxes,
     fontsize=14,
-    fontweight="bold",
     ha="center",
     va="center",
 )
